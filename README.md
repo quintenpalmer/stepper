@@ -6,13 +6,13 @@ This program steps up or down collections of values.
 
 ## How Does It Do This
 
-It takes a "current value", a "direction", and a file containing a "collection of values",
+It takes a "value format", a "current value", a "direction", and a file containing a "collection of values",
 and then walks a "direction" of "up" or "down" to find the next larger or smaller values in the "collection".
 
 ## Usage
 
 ```
- $ stepper up 40 ~/.config/example/config
+ $ stepper u32 up 40 ~/.config/example/config
 50
 ```
 
