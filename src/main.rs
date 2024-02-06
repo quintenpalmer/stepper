@@ -71,21 +71,28 @@ where
 
 fn main() -> Result<(), String> {
     let args: Vec<String> = env::args().collect();
-    if args.len() != 4 {
+    if args.len() != 5 {
         return Err("Must supply <direction>, <current-value>, and <config-file-path>".to_string());
     }
 
-    let direction = Direction::parse(&args[1])?;
-    let current_value = args[2]
-        .parse::<f32>()
-        .map_err(|_| "<current-value> must be a floating point number".to_string())?;
-    let config_file_path = args[3].clone();
+    let value_type = args[1].clone();
+    let direction = Direction::parse(&args[2])?;
+    let config_file_path = args[4].clone();
 
-    let steppable_values = resolve_steppable_values_from_config::<f32>(config_file_path)?;
+    match value_type.as_str() {
+        "f32" => {
+            let current_value = args[3]
+                .parse::<f32>()
+                .map_err(|_| "<current-value> must be a floating point number".to_string())?;
 
-    let new_value = resolve_new_value(direction, current_value, steppable_values);
+            let steppable_values = resolve_steppable_values_from_config::<f32>(config_file_path)?;
 
-    println!("{}", new_value);
+            let new_value = resolve_new_value(direction, current_value, steppable_values);
+
+            println!("{}", new_value);
+        }
+        _ => return Err("value type must be one of `f32` or `u32`".to_string()),
+    };
 
     return Ok(());
 }
