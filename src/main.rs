@@ -91,6 +91,17 @@ fn main() -> Result<(), String> {
 
             println!("{}", new_value);
         }
+        "u32" => {
+            let current_value = args[3]
+                .parse::<u32>()
+                .map_err(|_| "<current-value> must be a floating point number".to_string())?;
+
+            let steppable_values = resolve_steppable_values_from_config::<u32>(config_file_path)?;
+
+            let new_value = resolve_new_value(direction, current_value, steppable_values);
+
+            println!("{}", new_value);
+        }
         _ => return Err("value type must be one of `f32` or `u32`".to_string()),
     };
 
