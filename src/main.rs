@@ -14,7 +14,7 @@ impl Direction {
             "down" => Ok(Direction::Down),
             "up" => Ok(Direction::Up),
             "top" => Ok(Direction::Top),
-            _ => Err("<direction> must be one of 'up' or 'down'".to_string()),
+            _ => Err("<direction> must be one of 'top', 'up', 'down', or 'bottom'".to_string()),
         }
     }
 }
