@@ -72,7 +72,9 @@ where
 fn main() -> Result<(), String> {
     let args: Vec<String> = env::args().collect();
     if args.len() != 5 {
-        return Err("Must supply <direction>, <current-value>, and <config-file-path>".to_string());
+        return Err(
+            "Usage stepper <value-type> <direction> <current-value> <config-file-path>".to_string(),
+        );
     }
 
     let value_type = args[1].clone();
