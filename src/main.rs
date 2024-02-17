@@ -83,9 +83,10 @@ fn main() -> Result<(), String> {
 
     match value_type.as_str() {
         "f32" => {
-            let current_value = args[3]
-                .parse::<f32>()
-                .map_err(|_| "<current-value> must be a floating point number".to_string())?;
+            let current_value = args[3].parse::<f32>().map_err(|_| {
+                "<value-type> of f32 means <current-value> must be a floating point number"
+                    .to_string()
+            })?;
 
             let steppable_values = resolve_steppable_values_from_config::<f32>(config_file_path)?;
 
@@ -94,9 +95,9 @@ fn main() -> Result<(), String> {
             println!("{}", new_value);
         }
         "u32" => {
-            let current_value = args[3]
-                .parse::<u32>()
-                .map_err(|_| "<current-value> must be a floating point number".to_string())?;
+            let current_value = args[3].parse::<u32>().map_err(|_| {
+                "<value-type> of u32 means <current-value> must be a positive integer".to_string()
+            })?;
 
             let steppable_values = resolve_steppable_values_from_config::<u32>(config_file_path)?;
 
