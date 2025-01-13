@@ -28,33 +28,6 @@ where
     T: str::FromStr + Clone + cmp::PartialOrd,
     <T as str::FromStr>::Err: fmt::Debug,
 {
-    fn closest_up(&self, current: T) -> T {
-        for value in self.values.iter() {
-            if current < *value {
-                return value.clone();
-            }
-        }
-        return self.values[self.values.len() - 1].clone();
-    }
-
-    fn closest_down(&self, current: T) -> T {
-        for value in self.values.iter().rev() {
-            if current > *value {
-                return value.clone();
-            }
-        }
-        return self.values[0].clone();
-    }
-
-    pub fn resolve_new_value(&self, direction: Direction, current_value: T) -> T {
-        match direction {
-            Direction::Bottom => self.values[0].clone(),
-            Direction::Down => self.closest_down(current_value),
-            Direction::Up => self.closest_up(current_value),
-            Direction::Top => self.values[self.values.len() - 1].clone(),
-        }
-    }
-
     pub fn from_file<P: AsRef<path::Path>>(filename: P) -> Result<Self, String> {
         let file_contents = fs::read_to_string(filename).map_err(|e| format!("{:?}", e))?;
         let mut steppable_values = file_contents
@@ -71,6 +44,33 @@ where
         return Ok(Stepper {
             values: steppable_values,
         });
+    }
+
+    pub fn resolve_new_value(&self, direction: Direction, current_value: T) -> T {
+        match direction {
+            Direction::Bottom => self.values[0].clone(),
+            Direction::Down => self.closest_down(current_value),
+            Direction::Up => self.closest_up(current_value),
+            Direction::Top => self.values[self.values.len() - 1].clone(),
+        }
+    }
+
+    fn closest_up(&self, current: T) -> T {
+        for value in self.values.iter() {
+            if current < *value {
+                return value.clone();
+            }
+        }
+        return self.values[self.values.len() - 1].clone();
+    }
+
+    fn closest_down(&self, current: T) -> T {
+        for value in self.values.iter().rev() {
+            if current > *value {
+                return value.clone();
+            }
+        }
+        return self.values[0].clone();
     }
 }
 
