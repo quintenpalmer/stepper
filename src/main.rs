@@ -1,4 +1,4 @@
-use std::{cmp, env, fmt, fs, str};
+use std::{cmp, env, fmt, fs, path, str};
 
 pub enum Direction {
     Bottom,
@@ -19,54 +19,59 @@ impl Direction {
     }
 }
 
-fn closest_up<T: cmp::PartialOrd + Clone>(steppable_values: Vec<T>, current: T) -> T {
-    for value in steppable_values.iter() {
-        if current < *value {
-            return value.clone();
-        }
-    }
-    return steppable_values[steppable_values.len() - 1].clone();
+pub struct Stepper<T> {
+    values: Vec<T>,
 }
 
-fn closest_down<T: cmp::PartialOrd + Clone>(steppable_values: Vec<T>, current: T) -> T {
-    for value in steppable_values.iter().rev() {
-        if current > *value {
-            return value.clone();
-        }
-    }
-    return steppable_values[0].clone();
-}
-
-fn resolve_new_value<T: cmp::PartialOrd + Clone>(
-    direction: Direction,
-    current_value: T,
-    mut steppable_values: Vec<T>,
-) -> T {
-    steppable_values.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    match direction {
-        Direction::Bottom => steppable_values[0].clone(),
-        Direction::Down => closest_down(steppable_values, current_value),
-        Direction::Up => closest_up(steppable_values, current_value),
-        Direction::Top => steppable_values[steppable_values.len() - 1].clone(),
-    }
-}
-
-fn resolve_steppable_values_from_config<T: str::FromStr>(
-    config_file_path: String,
-) -> Result<Vec<T>, String>
+impl<T> Stepper<T>
 where
+    T: str::FromStr + Clone + cmp::PartialOrd,
     <T as str::FromStr>::Err: fmt::Debug,
 {
-    let file_contents = fs::read_to_string(config_file_path).map_err(|e| format!("{:?}", e))?;
-    let steppable_values = file_contents
-        .split("\n")
-        .into_iter()
-        .filter(|line| line.len() != 0)
-        .filter(|line| !line.starts_with('#'))
-        .map(|line| line.parse::<T>())
-        .collect::<Result<Vec<T>, _>>()
-        .map_err(|e| format!("{:?}", e))?;
-    return Ok(steppable_values);
+    fn closest_up(&self, current: T) -> T {
+        for value in self.values.iter() {
+            if current < *value {
+                return value.clone();
+            }
+        }
+        return self.values[self.values.len() - 1].clone();
+    }
+
+    fn closest_down(&self, current: T) -> T {
+        for value in self.values.iter().rev() {
+            if current > *value {
+                return value.clone();
+            }
+        }
+        return self.values[0].clone();
+    }
+
+    pub fn resolve_new_value(&self, direction: Direction, current_value: T) -> T {
+        match direction {
+            Direction::Bottom => self.values[0].clone(),
+            Direction::Down => self.closest_down(current_value),
+            Direction::Up => self.closest_up(current_value),
+            Direction::Top => self.values[self.values.len() - 1].clone(),
+        }
+    }
+
+    pub fn from_file<P: AsRef<path::Path>>(filename: P) -> Result<Self, String> {
+        let file_contents = fs::read_to_string(filename).map_err(|e| format!("{:?}", e))?;
+        let mut steppable_values = file_contents
+            .split("\n")
+            .into_iter()
+            .filter(|line| line.len() != 0)
+            .filter(|line| !line.starts_with('#'))
+            .map(|line| line.parse::<T>())
+            .collect::<Result<Vec<T>, _>>()
+            .map_err(|e| format!("{:?}", e))?;
+
+        steppable_values.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+        return Ok(Stepper {
+            values: steppable_values,
+        });
+    }
 }
 
 fn main() -> Result<(), String> {
@@ -88,9 +93,9 @@ fn main() -> Result<(), String> {
                     .to_string()
             })?;
 
-            let steppable_values = resolve_steppable_values_from_config::<f32>(config_file_path)?;
+            let stepper: Stepper<f32> = Stepper::from_file(config_file_path)?;
 
-            let new_value = resolve_new_value(direction, current_value, steppable_values);
+            let new_value = stepper.resolve_new_value(direction, current_value);
 
             println!("{}", new_value);
         }
@@ -99,9 +104,9 @@ fn main() -> Result<(), String> {
                 "<value-type> of u32 means <current-value> must be a positive integer".to_string()
             })?;
 
-            let steppable_values = resolve_steppable_values_from_config::<u32>(config_file_path)?;
+            let stepper: Stepper<u32> = Stepper::from_file(config_file_path)?;
 
-            let new_value = resolve_new_value(direction, current_value, steppable_values);
+            let new_value = stepper.resolve_new_value(direction, current_value);
 
             println!("{}", new_value);
         }
