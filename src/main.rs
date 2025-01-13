@@ -45,7 +45,17 @@ where
             values: steppable_values,
         });
     }
+}
 
+impl<T> Stepper<T>
+where
+    T: Clone + cmp::PartialOrd,
+{
+    pub fn new(mut values: Vec<T>) -> Self {
+        values.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+        Stepper { values }
+    }
     pub fn resolve_new_value(&self, direction: Direction, current_value: T) -> T {
         match direction {
             Direction::Bottom => self.values[0].clone(),
